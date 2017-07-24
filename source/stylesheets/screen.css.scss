@@ -35,6 +35,18 @@ html, body {
   -webkit-text-size-adjust: none; /* Never autoresize text */
 }
 
+a {
+  color: #302D8B;
+}
+
+tr {
+  border-bottom: 1px solid #f0f4f7;
+}
+
+td:nth-child(2) {
+  color: #6b6b6b;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TABLE OF CONTENTS
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,6 +61,7 @@ html, body {
 .toc-wrapper {
   transition: left 0.3s ease-in-out;
 
+  border-right: 1px solid #f0f4f7;
   overflow-y: auto;
   overflow-x: hidden;
   position: fixed;
@@ -58,8 +71,8 @@ html, body {
   bottom: 0;
   width: $nav-width;
   background-color: $nav-bg;
-  font-size: 13px;
-  font-weight: bold;
+  font-size: 16px;
+  font-weight: 300;
 
   // language selector for mobile devices
   .lang-selector {
@@ -102,7 +115,10 @@ html, body {
   }
 
   .logo {
-    margin-bottom: $logo-margin;
+    //margin-bottom: $logo-margin;
+    margin: $logo-margin;
+    max-width: 80%;
+
   }
 
   .search-results {
@@ -205,7 +221,7 @@ html, body {
   white-space: nowrap;
   text-overflow: ellipsis;
   text-decoration: none;
-  color: #fff;
+  color: $nav-text-inactive;
   transition-property: background;
   transition-timing-function: linear;
   transition-duration: 130ms;
@@ -276,6 +292,7 @@ html, body {
     position: fixed;
     z-index: 50;
     border-bottom: 5px solid $lang-select-active-bg;
+    padding-left: 15px;
   }
 }
 
@@ -353,8 +370,10 @@ html, body {
     padding-bottom: 0.5em;
     margin-bottom: $h1-margin-bottom;
     margin-top: 2em;
-    border-top: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;
+    border-top: 1px solid #f0f4f7;
+
+    //border-top: 1px solid #ccc;
+    //border-bottom: 1px solid #ccc;
     background-color: #fdfdfd;
   }
 
@@ -366,9 +385,9 @@ html, body {
   h2 {
     @extend %header-font;
     font-size: 19px;
-    margin-top: 4em;
+    margin-top: 2em;
     margin-bottom: 0;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid #f0f4f7;
     padding-top: 1.2em;
     padding-bottom: 1.2em;
     background-image: linear-gradient(to bottom, rgba(#fff, 0.2), rgba(#fff, 0));
@@ -468,6 +487,10 @@ html, body {
     background: $aside-notice-bg;
     line-height: 1.6;
 
+    border-radius: 10px;
+    margin: 40px;
+    width: 40%;
+
     &.warning {
       background-color: $aside-warning-bg;
     }
@@ -538,6 +561,13 @@ html, body {
     padding-top: 2em;
     padding-bottom: 2em;
     padding: 2em $main-padding;
+
+    white-space: pre-wrap;       /* css-3 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+
   }
 
   blockquote {
