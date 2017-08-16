@@ -1,5 +1,5 @@
 ---
-title: Metascan - API Reference - v1.01
+title: Metascan - API Reference - v1.02
 
 language_tabs: # must be one of https://git.io/vQNgJ
   - shell
