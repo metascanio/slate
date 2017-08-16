@@ -122,6 +122,16 @@ We provide four IPv4 and four IPv6 addresses, which will always return the same 
 * `127.9.9.4` - not found (good IP), also contains White List data
 * `::1, ::2, ::3, ::4` - returning as above for IPv6.
 
+## Domains
+
+We provide two testing domains:
+
+* `baddomain.org` - returns as if found in all domain DBs: DBL, and all URIBL
+
+* `okdomain.org` - returns as if not found in any DB.
+
+
+
 # HTTP Format
 
 ```shell
