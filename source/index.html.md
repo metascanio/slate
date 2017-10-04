@@ -1,13 +1,12 @@
 ---
-title: Metascan - API Reference - v1.010
+title: Zetascan - API Reference - v2.0
 
 language_tabs: # must be one of https://git.io/vQNgJ
   - shell
   - php
-  - javascript
 
 toc_footers:
-  - <a href='https://metascan.io/signup/?lang=en'>Sign Up for a Developer Key</a>
+  - <a href='https://zetascan.com/signup/?lang=en'>Sign Up for a Developer Key</a>
 
 search: true
 ---
@@ -17,32 +16,48 @@ search: true
 > API endpoint:
 
 ```
-https://api.metascan.io/
+https://api.zetascan.com/
 ```
 
-The Metascan Query Services `"MQS"` was created to facilitate the real-time lookup of IP and Domain threat data into various applications and services. Currently there are dozens of various domain and IP data-feeds available to developers. Many of these feeds are available free of charge and some are paid for services when minimum query levels are exceeded. In addition, there are 2 main problems with trying to incorporate multiple data feed into a solution:
+
+The Zetascan Query Services `"ZQS"` was created to facilitate the real-time lookup of IP and Domain threat data into various applications and services. Currently there are dozens of various domain and IP data-feeds available to developers. Many of these feeds are available free of charge and some are paid for services when minimum query levels are exceeded. In addition, there are 2 main problems with trying to incorporate multiple data feed into a solution:
 
 1. The overlap between data feed providers in the content listed (IPs & URIs), and
 
-2. The absence of normalized meta-data related to the IPs or Domains.
+2. The absence of normalised meta-data related to the IPs or Domains.
 
-Because of the above, many developers asked if we could do something to reduce the complexity related to accessing and using threat data as part of their applications - MQS is our solution. We are introducing a _more elegant API for developers_, with an affordable pricing model to match.
+Because of the above, many developers asked if we could do something to reduce the complexity related to accessing and using threat data as part of their applications - ZQS is our solution. We are introducing a _more elegant API for developers_, with an affordable pricing model to match.
 
-To start, [signup for a developer key](https://metascan.io/signup/?lang=en) and begin to integrate MQS into your web-apps and mobile applications. 
+To start, [signup for a developer key](https://zetascan.com/signup/?lang=en) and begin to integrate ZQS into your web-apps and mobile applications. A free-trial for 5,000 API queries is available for a 60-day period.
+
+# Developer library
+
+To ease implementation Zetascan provides developer libraries in various languages. This provides a straightforward way to add ZQS support into your application.
+
+* [Go library](https://github.com/zetascan/go-zetascan)
+	* HTTP, text, JSON and JSONx support
+	* Support for DNS lookups
+	* Example code provided
+* [PHP library](https://github.com/zetascan/php-zetascan)
+	* HTTP, text, JSON and JSONx support 
+* Python and NodeJS library, coming soon.
+
 
 # Authentication
 
-> To authorize, use this code:
+Authentication to ZQS can be provided via an API key, or specifying your servers static IP address.
+
+### API key
 
 ```shell
-curl https://api.metascan.io/?key=YOURAPIKEY
+curl https://api.zetascan.com/?key=YOURAPIKEY
 ```
 
 ```php
 <?
 $ch = curl_init();
 
-curl_setopt($ch, CURLOPT_URL, 'https://api.metascan.io/?key=YOURAPIKEY');
+curl_setopt($ch, CURLOPT_URL, 'https://api.zetascan.com/?key=YOURAPIKEY');
 
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
@@ -50,32 +65,19 @@ $response = curl_exec($ch);
 ?>
 ```
 
-```javascript
-
-$.ajax({
-type: 'GET',
-url: 'https://api.metascan.io/?key=YOURAPIKEY',
-dataType: 'JSON',
-success: function(response) {
-  console.log(response);
-},
-
-error: function(xhr, status, error) {
-  console.log(error.toString());
-}
-
-});
-```
-
-All queries to MSQ require your API key specified as an argument. No API key? [Signup and receive](https://metascan.io/signup/?lang=en') a key instantly. 
-
 > Make sure to replace `YOURAPIKEY` with your API key.
 
-MSQ uses API keys to allow access to the service, and expects the API key to be included in all requests to the server.
+To query the ZQS an API can be specified as an argument. No API key? [Signup and receive](https://zetascan.com/signup/?lang=en) a key instantly. 
+
+ZQS uses API keys to allow access to the service, and expects the API key to be included in all requests, if IP authentication is not provided.
 
 <aside class="notice">
-You must replace <code>YOURAPIKEY</code> with your personal API key.
+Zetascan only accepts the API key using SSL/https. If using the http interface without SSL, IP authentication must be used.
 </aside>
+
+### IP authentication
+
+Alternatively, authentication to ZQS can be allowed by providing your servers IP address via the [Zetascan dashboard](https://zetascan.com/dashboard/?lang=en).
 
 # API Overview
 
@@ -84,37 +86,59 @@ You must replace <code>YOURAPIKEY</code> with your personal API key.
 > Query end-points include 4 formatting options:
 
 ```
-https://api.metascan.io/v1/check/http/
+https://api.zetascan.com/v2/check/http/
 ```
 
 ```
-https://api.metascan.io/v1/check/text/
+https://api.zetascan.com/v2/check/text/
 ```
 
 ```
-https://api.metascan.io/v1/check/json/
+https://api.zetascan.com/v2/check/json/
 ```
 
 ```
-https://api.metascan.io/v1/check/jsonx/
+https://api.zetascan.com/v2/check/jsonx/
 ```
 
-You can issue requests to our endpoints from virtually any operating system or programming language. REST queries are extremely fast and provide the reachest set of information about an item. For example, the Spamhaus' CBL data is available only via REST JSONX query.
+You can issue requests to our endpoints from virtually any operating system or programming language. REST queries are extremely fast and provide the richest set of information about an item.
 
-Each client has unique access key, generated by the system. You need to provide this key, if querying from an unregistered IP address. Requests from unregistered IP address are rejected, if not performed over HTTPS (secure).
+Each client has unique access key, generated by the system. You need to provide this key, if querying from an unregistered static IP address.
 
 There are four types of REST queries:
 
 * HTTP
 * Text
 * JSON
-* JSONX.
+* JSONx
 
 The type of desired query is passed in the HTTP request.
 
-## IP Addresses
+## Score calculation
 
-We provide four IPv4 and four IPv6 addresses, which will always return the same answers. Use those for testing and development:
+ZQS provides two scoring mechanisms to grade an IP or domain-name for abuse, anti-spam measures, and trustworthiness. 
+
+The minimum score is `-0.1`, meaning an item was matched on a known trusted white-list.
+
+If a score is `0`, the item is not found within Zetascan and can be considered neutral.
+
+A score between `0 - 1.0` is a rating on the specified domain or IP address. Scores above `0.35` should be considered as spam or fraudulent.
+
+Reference the [data sources](#data-sources) chapter for more information on feeds used to calculate the scores.
+
+### webscore
+
+Webscore is returned by all query methods, which is used to determine a score for integrating your web-application, mobile-app or protecting your application infrastructure.
+
+### score
+
+Score is also returned by all query methods, and it used to determine a specified IP or domain-name for anti-spam abuse via SMTP, useful for MTA and spam-filters. This score takes into consideration email abuse, and uses a different algorithm from the webscore key.
+
+## Test Cases
+
+### IP Addresses
+
+We provide four IPv4 and four IPv6 addresses, which will always return the same answers. Use these for testing and development:
 
 * `127.9.9.1` - returning as if found in SBL, XBL & CBL
 * `127.9.9.2` - returning as if in PBL
@@ -122,240 +146,477 @@ We provide four IPv4 and four IPv6 addresses, which will always return the same 
 * `127.9.9.4` - not found (good IP), also contains White List data
 * `::1, ::2, ::3, ::4` - returning as above for IPv6.
 
-## Domains
+### Domains
 
 We provide two testing domains:
 
-* `baddomain.org` - returns as if found in all domain DBs: DBL, and all URIBL
+* `baddomain.org` - returns as if found in all domain DB's: DBL, and all URIBL
 
 * `okdomain.org` - returns as if not found in any DB.
 
+## Error handling
+
+When querying ZQS, the following error-codes will be returned if the query or authentication failed. Each query format (Text, HTTP, JSON/JSONx) will embed any error messages in the returned data. Examples on handling errors will be provided for each query format example.
+
+### Error codes
+
+`1` 	Wrong API key
+
+`2` 	API key sent over HTTP (HTTPS required)
+
+`3`		REST query with POST Method (GET Required)
+
+`4`		Missing IP/Domain argument
+
+`5`		Query limit exceeded (for developers)
+
+`6`		Failed to parse query item(s)
+
+`7`		Authentication failure (wrong key, disabled, IP address not allowed, etc.)
 
 
 # HTTP Format
 
 ```shell
-curl https://api.metascan.io/v1/check/http/baddomain.org?key=YOURAPIKEY
+curl -i https://api.zetascan.com/v2/check/http/baddomain.org?key=YOURAPIKEY
+
+HTTP/1.1 200 OK
+Content-Type: text/plain; charset=utf-8
+x-zetascan-items: baddomain.org
+x-zetascan-status: success
+x-zetascan-score: 1
+x-zetascan-sources: DBL;RED;GREY;GOLD;BLACK
+x-zetascan-wl: null
+x-zetascan-time: 1500970900
+x-zetascan-webscore: 0.6
+x-zetascan-fromParent: null
 ```
 
 ```php
 <?
 $ch = curl_init();
 
-curl_setopt($ch, CURLOPT_URL, 'https://api.metascan.io/v1/check/http/baddomain.org?key=YOURAPIKEY');
-
+curl_setopt($ch, CURLOPT_URL, 'https://api.zetascan.com/v2/check/http/baddomain.org?key=YOURAPIKEY');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
+// Request headers only
+curl_setopt($ch, CURLOPT_HEADER, true); 
+curl_setopt($ch, CURLOPT_NOBODY, true);
+
 $response = curl_exec($ch);
-?>
-```
 
-```javascript
-$.ajax({
-type: 'GET',
-url: 'https://api.metascan.io/v1/check/http/baddomain.org?key=YOURAPIKEY',
-dataType: 'text',
-success: function(response) {
-  console.log(response);
-},
+// Lookup the HTTP status code
+$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-error: function(xhr, status, error) {
-  console.log(error.toString());
+// Check status codes for a match
+if($status == 204) {
+    echo "No match in Zetascan blacklist or white-list";
+
+} else if($status == 403)   {
+    echo "Request forbidden, check API-key or IP registered";
+
+} else if($status == 200) {
+
+    $headers = array();    
+    $data = explode("\n",$response);
+    
+    $headers['status'] = $data[0];
+    
+    // Take the HTTP response out, first element
+    array_shift($data);
+    
+    // Build an array for our headers
+    foreach($data as $part){
+        $middle=explode(":",$part);
+        $headers[trim($middle[0])] = trim($middle[1]);
+    }
+
+	// Display the score if blacklisted, otherwise if a whitelist
+    if( $headers[x-zetascan-score] > 0 || $headers[x-zetascan-webscore] > 0)    {
+        echo "Item blacklisted, score " . $headers[x-zetascan-score] . " webscore " . $headers[x-zetascan-webscore];
+    } else {
+        echo "Item white-listed";
+    }
 }
-
-});
-```
-
-```text
-HTTP 200 (OK).
-
-If the item is not present in any black list, then the answer will be 204 (No Content).
+?>
 ```
 
 HTTP returns very simple response - found or not, via HTTP response code. If found, the response will be 200 (OK).
 
-If the item is not present in any black list, then the answer will be 204 (No Content).
+If the item is not present in any black-list/white-list, then the answer will be 204 (No Content).
 
-Additional information about the item is found in the response headers. Check the Developers page for more information.
+Additional information about the item is found in the response headers. 
 
-HTTP example - replace 'baddomain.org' with your query - IP or domain:
+### Response headers
+
+If the query matches, the following HTTP headers will be supplied for additional information.
+
+>Example HTTP header response:
+
+```
+x-zetascan-items:querydomain.org
+x-zetascan-score:1
+x-zetascan-webscore:0.6
+x-zetascan-sources:DBL;RED;GREY;GOLD;BLACK
+x-zetascan-time:1500970900
+x-zetascan-wl:null
+x-zetascan-status:success
+```
+
+HTTP Header | Description
+--------- | -----------
+x-zetascan-items | The argument used to query ZQS
+x-zetascan-score | The score returned for the query, used for MTA and SMTP anti-spam measures
+x-zetascan-webscore | The score returned for the query, used for Web and application anti-abuse. Note the differences between web-score and score, see the score calculation for more information.
+x-zetascan-sources | A list of sources the query is obtained from, delimitated by a semicolon. See the [source references](#domains-sources) for more information.
+x-zetascan-time | EPOCH time of response for the query
+x-zetascan-wl | A list of sources matched if the query is listed in a white-list.
+x-zetascan-status | Returns "success", otherwise "forbidden" or "error"
+
+
+### Error handling
+
+> Example HTTP error response:
+
+```
+x-zetascan-errorCode:7
+x-zetascan-errorMessage:Wrong API Key
+x-zetascan-status:forbidden
+```
+
+HTTP Header | Description
+--------- | -----------
+x-zetascan-errorCode | The returned error-code. If present, the query has failed.
+x-zetascan-errorMessage | A detailed explanation of the failure
+x-zetascan-status | Returns "forbidden" if authentication denied, or "error" for all other error codes.
+
+## Multiple items
+
+
+> http://api.zetascan.com/v2/check/http/127.9.9.1,127.9.9.2
+
+```
+x-zetascan-items: 127.9.9.1,127.9.9.2
+x-zetascan-status: success,success
+x-zetascan-score: 0.95,0.2
+x-zetascan-sources: XBL;SBL,PBL
+x-zetascan-wl: null,null
+x-zetascan-time: 1500970900,1500970900
+x-zetascan-webscore: 0.6,null
+x-zetascan-fromParent: null,null
+```
+
+
+You can send multiple items in a single request by comma delimitating each IP or domain. This will speed up the overall time for answering your query.
+
+The HTTP headers will contain a response for each query, comma delimitated in sequence from the query specified.
+
 
 # Text Format
 
 ```shell
-curl https://api.metascan.io/v1/check/text/baddomain.org?key=YOURAPIKEY
+curl https://api.zetascan.com/v2/check/text/baddomain.org?key=YOURAPIKEY
 ```
 
 ```php
 <?
+// Text method
 $ch = curl_init();
 
-curl_setopt($ch, CURLOPT_URL, 'https://api.metascan.io/v1/check/text/baddomain.org?key=YOURAPIKEY');
-
+curl_setopt($ch, CURLOPT_URL, 'https://api.zetascan.com/v2/check/text/baddomain.org?key=YOURAPIKEY');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
 $response = curl_exec($ch);
-?>
-```
 
-```javascript
-$.ajax({
-type: 'GET',
-url: 'https://api.metascan.io/v1/check/text/baddomain.org?key=YOURAPIKEY',
-dataType: 'text',
-success: function(response) {
-  console.log(response);
-},
+// Lookup the HTTP status code
+$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-error: function(xhr, status, error) {
-  console.log(error.toString());
+// Check status codes for a match
+if($status == 204) {
+    echo "No match in Zetascan blacklist or white-list";
+
+} else if($status == 403)   {
+    echo "Request forbidden, check API-key or IP registered";
+
+} else if($status == 200) {
+
+        // Read the body and split from the specified API formatting
+        $head = explode(":", $response);
+
+        if($head[0] == "error") {
+
+            echo "An error occurred " . $head[1];
+
+        } else {
+
+            $str = explode(",", $head[1]);
+            
+            // $str will contain each field as specified below
+            echo "Blacklist hit => " . $str[0] . "\n";
+            echo "Whitelist hit => " . $str[1] . "\n";
+            echo "Whitelist data => " . $str[2] . "\n";
+            echo "Score => " . $str[3] . "\n";
+            echo "WebScore => " . $str[4] . "\n";
+    
+            echo "Sources => ";
+    
+            // List all sources, comma separated
+            for($i = 5; $i < count($str); $i++) {
+                echo $str[$i] . ",";
+            }
+
+        }
+  
 }
-
-});
+?>
 ```
 
 > The above example returns text in the format:
 
 ```text
-127.9.9.4:false,true,med;metascan.io;99999,-0.1 127.9.9.1:true,false,,0.95,xbl,sbl
+baddomain.org:true,false,,1,0.6,dbl,red,gold,grey,black
 ```
 
 TEXT returns space separated blocks of information about the lists where the item is found.
 
 Text example - replace 'baddomain.com' with your query - IP or domain:
 
+### Format
+
 Items are separated by space. The format for each item is:
 
-`item:bool,bool,wldata,score,source`
+`item:bool,bool,wldata,score,webscore,source`
 
 Where:
 
-* the first bool is true, if found in any black list,
+* the first bool is true, if found in any black list.
 
-* the second bool is true, if found in any white list,
+* the second bool is true, if found in any white list.
 
-* wldata contains the data from the white list, and
+* wldata contains the data from the white list (if present)
 
-* score is followed by the list of sources where the item was found.
+* score, returns the score used for MTA/anti-spam abuse.
+
+* webscore, the returned score for web/application abuse.
+
+* sources, a comma separated list of which lists the query was matched on.
+
+### Error handling
+
+If an error occurs using the text query, the data returned will contain the an error prefix, followed by an error message, and the specific error-code.
+
+Example authentication error:
+
+`error:Wrong API Key;7`
+
+Malformed query:
+
+`error:Failed to parse query's item;3`
+
+## Multiple items
+
+> http://api.zetascan.com/v2/check/text/127.9.9.1,127.9.9.2
+
+```
+127.9.9.1:true,false,,0.95,0.6,xbl,sbl 127.9.9.2:true,false,,0.2,0,pbl
+```
+
+You can send multiple items in a single request by comma delimitating each IP or domain. This will speed up the overall time for answering your query.
+
+The text format, will contain a response for each query, `space` delimitated.
+
 
 # JSON Format
 
 ```shell
-curl https://api.metascan.io/v1/check/json/baddomain.org?key=yourkeygoeshere
+curl https://api.zetascan.com/v2/check/json/baddomain.org?key= YOURAPIKEY
 ```
 
 ```php
 <?
+// PHP example with multi-query support, error checking, and JSON data presented
 $ch = curl_init();
 
-curl_setopt($ch, CURLOPT_URL, 'https://api.metascan.io/v1/check/json/baddomain.org?key=YOURAPIKEY');
-
+curl_setopt($ch, CURLOPT_URL, 'https://api.zetascan.com/v2/check/json/baddomain.org,okdomain.org,badquery?key=YOURAPIKEY');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
 $response = curl_exec($ch);
 
-echo json_decode($response);
+// Lookup the HTTP status code
+$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
+// Check status codes for a match
+if($status == 403)   {
+    echo "Request forbidden, check API-key or IP registered";
+
+} else if($status == 200) {
+
+    $json = json_decode($response, true);
+
+    // Check for any error messages, auth failure, API-key incorrect, etc.
+    if( !empty($json["error"]["message"])) {
+        echo "An error occurred " . $json["error"]["message"];
+    } 
+
+    // Loop through each response ( multiple queries can be delimitated by a comma)
+    for($i = 0; $i < count($json["results"]); $i++) {
+        
+        echo "Query => " . $json["results"][$i]["item"] . "\n";
+
+        // Check for an error message
+        if($json["results"][$i]["error"]) {
+            echo "An error occurred " . $json["results"][$i]["error"]["message"] . "\n";
+            continue;
+        }
+        
+        // Display the results
+        print_r($json["results"][$i]);
+
+    }
+    
+}
 ?>
 ```
 
-```javascript
-$.ajax({
-type: 'GET',
-url: 'https://api.metascan.io/v1/check/json/baddomain.org?key=YOURAPIKEY',
-dataType: 'JSON',
-success: function(response) {
-  console.log(response);
-},
-
-error: function(xhr, status, error) {
-  console.log(error.toString());
-}
-
-});
-```
+>Example JSON return string:
 
 ```json
 {
-  "results": [{
-    "item": "123.123.123.123",
-    "found": true,
-    "score": 0.2,
-    "fromSubnet": true,
-    "sources": ["shPBL"],
-    "wl": false,
-    "wldata": ""
-  }],
-  "executionTime": 2,
-  "status": "success" 
+	"results":[{
+		"item":"baddomain.org",
+		"found":true,
+		"score":1,
+		"webscore":0.6,
+		"fromSubnet":false,
+		"sources":
+			["shDBL","ubGrey","ubGold","ubRed","ubBlack"],
+		"wl":false,
+		"wldata":"",
+		"lastModified":1500972200
+		}],
+	"executionTime":2,
+	"status":"success"
 }
 ```
 
-JSON will return a JSON document with details about black lists, whether the item was found in a subnet, etc. See format explanation below. JSON example - replace 'baddomain.org' with your query - IP or domain:
+The query will return a JSON response including if the item is found on a black-list/white-list, score, sources, etc. Refer to the table below for each field explanation.
 
-JSON response:
+<aside class="notice">
+The `found` key will be true, if the item is hit in a black-list or white-list. Test the `wl` condition if the item is contained within a white-list. If the score or webscore value is > 0 and `wl` false, the item is contained in a black-list.
+</aside>
+
+### JSON response
 
 Parameter | Description
 --------- | -----------
-Item | IP address
-Found | True/False if found in MQS
-Score | Score between -0.1 to 1.0. See [score information](#score-calculation)
+Item | Query value (IP or domain)
+Found | True/False if matched in a white-list/black-list.
+Score | Score between -0.1 to 1.0 for MTA/Anti-spam abuse. See [score information](#score-calculation)
+WebScore | Scorebetween 0.1 to 1.0 for Web/application abuse.
 FromSubnet | Will be true, if the IP address was found in a subnet (PBL, SBL)
-Sources | Lists matched from MQS. [See list](#data-amp-access-methods) information.
-Wl | To be specified
-Wldata | To be specified
+Sources | Black-Lists matched from ZQS. [See list](#data-amp-access-methods) information.
+Wl | If the item matches a white-list.
+Wldata | White-Lists matched from ZQS. [See list](#data-amp-access-methods) information.
 ExecutionTime | Time in ms for server response
 Status | Success or failure
 
-# JSONX Format
+### Error handling
+
+> Example authentication error:
+
+```json
+{"error":{"message":"Wrong API Key","errorCode":7}} 
+```
+
+>Malformed query:
+
+```json
+{"results":
+	[{"item":"malformedquery",
+	  "error":{
+	  	"message":"Failed to parse query's item",
+	  	"errorCode":3
+	  	}
+	}],
+	...
+}
+```
+
+If an error occurred, the JSON response will return an errorCode, message and status within the JSON object.
+
+It is highly recommended to test against the specified error-codes during implementation. Reference the [error handling](#error-handling) section for more information.
+
+## Multiple items
+
+> http://api.zetascan.com/v2/check/json/127.9.9.1,127.9.9.2
+
+```json
+{"results":
+	[{
+	"item":"127.9.9.1",
+	...
+	},{
+	"item":"127.9.9.2",
+	...
+	}],
+"executionTime":1,
+"status":"success"
+}
+```
+
+You can send multiple items in a single request by comma delimitating each IP or domain. This will speed up the overall time for answering your query.
+
+The JSON format, will contain a response for each query within the `results` array
+
+
+# JSONx Format
 
 ```shell
-curl https://api.metascan.io/v1/check/jsonx/baddomain.org?key=yourkeygoeshere
+curl https://api.zetascan.com/v2/check/jsonx/baddomain.org?key=yourkeygoeshere
 ```
 
 ```php
 <?
 $ch = curl_init();
 
-curl_setopt($ch, CURLOPT_URL, 'https://api.metascan.io/v1/check/jsonx/baddomain.org?key=YOURAPIKEY');
-
+curl_setopt($ch, CURLOPT_URL, 'https://api.zetascan.com/v2/check/jsonx/127.9.9.1?key=YOURAPIKEY');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
 $response = curl_exec($ch);
 
-echo json_decode($response);
+// Lookup the HTTP status code
+$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
+// Check status codes for a match
+if($status == 403)   {
+    echo "Request forbidden, check API-key or IP registered";
+
+} else if($status == 200) {
+
+    $json = json_decode($response, true);
+
+    // Display the array
+    print_r($json);
+
+    // Display extended information
+    print_r($json["results"][0]["extended"]);
+    
+}
 ?>
 ```
 
-```javascript
-$.ajax({
-type: 'GET',
-url: 'https://api.metascan.io/v1/check/jsonx/baddomain.org?key=YOURAPIKEY',
-dataType: 'JSON',
-success: function(response) {
-  console.log(response);
-},
-
-error: function(xhr, status, error) {
-  console.log(error.toString());
-}
-
-});
-```
-
-JSONX will return also a JSON document, extended with additional information about the last known activity of an fraudulent IP address. There are no jsonx queries for domains. Jsonx example - replace 'baddomain.com' with your query - IP or domain:
+JSONx will return also a JSON document, extended with additional information about the last known activity of an fraudulent IP address. The JSONx format only supports `IP addresses` and not domain queries.
 
 <aside class="success">
-Use JSONX if you require extended information regarding the queried host.
+Use JSONx if you require extended information regarding the queried host.
 </aside>
 
-### JSONX response:
 
-It includes additional information about an IP address with fraudulent activity. This information is found in the 'extended' and 'emailsdaily' fields, e.g.:
+### JSONx response
+
+Responses include additional information about an IP address with fraudulent activity. This information is found in the 'extended' and 'emailsdaily' fields, e.g.:
 
 ### Query Parameters
-
 
 ```json
 "extended": {
@@ -379,6 +640,11 @@ It includes additional information about an IP address with fraudulent activity.
     }
 ```
 
+<aside class="notice">
+The JSONx format will always return an `extended` element, regardless if additional information is available.
+</aside>
+
+
 Parameter | Description
 --------- | -----------
 ASNum | The autonomous system number of the ISP;
@@ -391,7 +657,16 @@ emailsdaily | Contains the number of detected spam emails in the last 24 hours;
 
 For SMTP use, the `reason` JSON response will extend information based on the EHLO/SMTP reputation of the queried IP. Results include:
 
-## Bot
+* Bot
+* Sinkhole
+* Web-Server Compromises
+* Web-Server Attacks
+* Miscellaneous
+* Unknown
+
+Details for each response is provided below:
+
+### Bot
 
 JSONX provides extended information to protect your web-site or mobile application, especially for user signup forms, login and integrations to your application.
 
@@ -410,7 +685,7 @@ Type | Sinkhole
 Source | Source IP
 Port | Source Port
 
-### Web Server Compromises
+### Web-Server Compromises
 
 ```json
 {"class":"BOT", "rule":"20062", "type":"spamlink", "domain":"www.thefashionic.com", "source":"1.53.132.24", "name":"gamut", "link":"https://www.thefashionic.com/wp-content/themes/thevoux-wp/f3ebf56b6f.html", "redirect":"https://targetsale.name"}
@@ -425,7 +700,7 @@ Source | Source IP
 Link | Typed link, e.g. as it appears to user
 Redirect | Real link destination
 
-### Web Server Attacks
+### Web-Server Attacks
 
 ```json
 {"class":"BOT", "rule":"9051", "type":"web server attack", "name":"commentspammer"}
@@ -472,7 +747,7 @@ Halo | SMTP Halo specified
 
 ## SMTP
 
-If using MQS for MTA/SMTP security, JSONX provides extended information that can assist with spam detection and email security for end-user mailboxes.
+If using ZQS for MTA/SMTP security, JSONx provides extended information that can assist with spam detection and email security for end-user mailboxes.
 
 ### LOC
 
@@ -592,77 +867,145 @@ Parameter | Description
 --------- | -----------
 HELO | Special category for development purposes.
 
+## Error handling
+
+Error handling for the JSONx query type is the same as the [JSON error handling](#error-handling-4) section. 
 
 ## Multiple items
 
-```
-http://api.metascan.io/v1/check/jsonx/127.9.9.1,baddomain.org,127.9.9.4,okdomain.org,::1
-```
+JSONx support multiple items for a single query, and matches the [JSON multiple-item](#multiple-items-3) format.
 
-You can send multiple items in a single request. This will speed up the overall time for answering your query. Whenever possible, please use multiple items in a single query
+# Browser access
 
+Alternatively, you can test the ZQS using your web-browser. This should be used for test purposes only.
 
-## Browser access
-
-- Point your browser to [https://metascan.io/query](https://metascan.io/query)
+- Point your browser to [https://zetascan.com/query](https://zetascan.com/query)
 
 - Enter one or more IP addresses or domain names;
 
-Click Check.
-
 The service will return list of results with details on where the items were found, query time, and calculated score
 
-Note: a 5 second delay is applied to all anonymous user queries. Please register to remove this delay.
+Note: a 5 second delay is applied to all anonymous user queries. Please register for an API key to remove this delay.
 
 # DNS API
 
-We are providing an rbldns-like server that combines the information from all the sources we aggregate.
+ZQS provides an `rbldns` service that combines the information from all the sources we aggregate.
 
-You should direct your DNS or anti-spam software to query `api.metascan.io`
+Multiple query formats are supported, with DNS type records A (ipv4), AAAA (ipv6) and TXT returned.
 
-The query string shall be the domain name or IP address, like:
+## Lookup access
 
-`
-baddomain.org
-`
+ZQS provides lookup access for a domain or IP address against the `*.{APIKEY}.api.zetascan.com` FQDN.
 
-Or:
-
-`127.9.9.1 or 1234:5678:9abc::`
-
-_(not reversed IP, if query type is 'A')_
-
-Or:
-
-`reversed as 1.9.9.127.in-addr.arpa`
-
-`0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.c.b.a.9.8.7.6.5.4.3.2.1.ip6.arpa`
-
-_if query type is 'PTR'_
-
-The server will reply either with a 127.x.x.x code (if the item is in our lists), or with NXDOMAIN response, if the item is not found.
+This end-point can be used by MTA/SMTP software such as Exim, Postfix, Sendmail and more, for Anti-spam lookups and abuse prevention. Zetascan is a drop-in replacement for existing RBL services to provide a seamless anti-spam service.
 
 <aside class="notice">
-Note that for both IPv4 and IPv6 addresses we only return IPv4 response codes!
+Your API-key must be provided as part of the domain-name query.
 </aside>
+
+## Domain query
+
+Domain query:
+
+ `dig A baddomain.org.{key}.api.zetascan.com`
+
+ IPv4 query (213.189.1.4), note the _IP must be reversed_:
+
+
+`dig TXT 4.1.189.213.{key}.api.zetascan.com`
+
+
+IPv6 query, note the _IP must be reversed and expanded_:
+
+ `dig AAAA 0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.c.b.a.9.8.7.6.5.4.3.2.1.{key}.api.zetascan.com`
+
 
 <aside class="notice">
-DNS queries from unregistered IP addresses will be rejected. You need to register all IPs of the machines issuing DNS queries to our servers.
+Using the domain query will access your ISP or specified name-server as the resolver. This method may cache results, and performance will vary depending on the upline nameserver.
 </aside>
 
-Sample dig syntax:
+## Direct access
 
-`dig @api.metascan.io baddomain.org`
+Alternatively, you can query `api.zetascan.com` directly as a nameserver and retrieve results. Your IP address must be specified within the [Zetascan dashboard](https://zetascan.com/dashboard/?lang=en) for access to be granted.
 
-Sample NSLOOKUP example:
+<aside class="notice">
+If using an on-premise version of Zetascan replace api.zetascan.com with your provided end-point.
+</aside>
 
-`nslookup baddomain.org api.metascan.io`
+Domain query:
 
-Note: If you use Windows' nslookup, you must set the following options: nodefname, nosearch.
+`dig A @api.zetascan.com baddomain.org`
+
+IPv4 query, note, _IP is not_ reverse formatted.
+
+`dig TXT @api.zetascan.com 127.9.9.4`
+
+IPv6 query:
+
+`dig AAAA @api.zetascan.com ::1`
+
+PTR IPv4 query (used for reverse IP lookups):
+
+`dig PTR @api.zetascan.com PTR 1.9.9.127.in-addr.arpa.`
+
+PTR IPv6 query (used for reverse IP lookups):
+
+`dig PTR @api.zetascan.com 0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.c.b.a.9.8.7.6.5.4.3.2.1.ip6.arpa`
 
 # DNS Response codes
 
-## 127.0.0.x
+When querying ZQS via DNS two formatting options are returned, TXT or (A, AAAA, PTR)
+
+## TXT format
+
+When querying for the DNS TXT type, if the domain/IP is matched, extended information will be returned for the query.
+
+Query:
+
+`dig TXT @api.zetascan.com 127.9.9.4`
+
+Return response:
+
+`127.9.9.4.		0	IN	TXT	"127.9.9.4:true,true,10;med;zetascan.com;99999,-0.1,-0.1,dnswl"`
+
+The response will be the same format as the [HTTP text](#text-format):
+
+The format for each item is:
+
+`item:bool,bool,wldata,score,webscore,source`
+
+Where:
+
+* the first bool is true, if found in any black list.
+
+* the second bool is true, if found in any white list.
+
+* wldata contains the data from the white list (if present)
+
+* score, returns the score used for MTA/anti-spam abuse.
+
+* webscore, the returned score for web/application abuse.
+
+* sources, a comma separated list of which lists the query was matched on.
+
+
+## A, AAAA, PTR format
+
+When querying via DNS using the A, AAAA, or PTR record types, the following IP addresses will be returned, indicating a match on a specified black-list/white-list, and extended reasons.
+
+Sample dig syntax:
+
+`dig 4.9.9.127.{APIKEY}.api.zetascan.com A`
+
+Returned data:
+
+`4.9.9.127.{APIKEY}.api.zetascan.com. 0 IN A 127.8.10.3`
+
+The IP returned in the 127.X.X.X format is based on the realtime blacklist `RBL` syntax, pioneered by anti-spam and MTA software.
+
+Examples for each response type listed below:
+
+### 127.0.0.x
 
 Parameter | Description
 --------- | -----------
@@ -675,7 +1018,7 @@ Parameter | Description
 127.0.0.3 | SBL Spamhaus SBL CSS Data
 127.0.0.9 | SBL Spamhaus DROP/EDROP Data
 
-## 127.0.1.x
+### 127.0.1.x
 
 Parameter | Description
 --------- | -----------
@@ -691,7 +1034,7 @@ Parameter | Description
 127.0.1.106 | abused legit botnet C&C
 127.0.1.200 | Zero reputation domain
 
-## 127.1.0.x
+### 127.1.0.x
 
 Parameter | Description
 --------- | -----------
@@ -701,7 +1044,7 @@ Parameter | Description
 127.1.0.3 | Grey
 127.1.0.4 | Red
 
-## 127.8.0.x
+### 127.8.0.x
 
 Parameter | Description
 --------- | -----------
@@ -731,11 +1074,11 @@ Parameter | Description
 15 | Email Marketing Providers
 20 | Added through Self Service without specific category
 
-# Metascan Overview
+# Technical Overview
 
 ## Data & Access Methods
 
-The MQS service is accessible via 6 different methods: Browser queries, 4 REST services (Text, HTTP, JSON, JSONx) and DNS.
+The ZQS service is accessible via 6 different methods: Browser queries, 4 REST services (Text, HTTP, JSON, JSONx) and DNS.
 
 Currently we derive our results from several providers, including:
 
@@ -746,19 +1089,13 @@ Currently we derive our results from several providers, including:
 
 We also apply internal algorithms for de-duplicating, normalizing and scoring each item in our database, providing a seamless and reliable API end-point for your application.
 
-MSQ queries are answered in less than 1 millisecond, and expect no longer then 10 milliseconds for a query reply.
+ZQS queries are answered in less than 1 millisecond, and expect no longer then 10 milliseconds for a query reply.
 
-An MQS virtual appliance is also available for on-premises installation for super-fast access. Please contact us for details about that option.
+All our sources are updated at very frequent intervals. We are also using real-time streams, so you may rest assured that you get the latest information from ZQS.
 
-All our sources are updated at very frequent intervals. We are also using real-time streams, so you may rest assured that you get the latest information from MQS.
-
-## Score calculation
-
-We are calculating the score for each item, based on where it is found, the additional information we have about the item (e.g. exploit type, bot, etc.) and whether it is found in one or more lists.
-
-The minimum score is -0.1, meaning that an item was found in White List only. Score 0 means that the item is not found in our DB, and the maximum score is 1. In general, items with score above 0.35 shall be considered as spam or fraud.
-
-# Data Sources
+<aside class="notice">
+An ZQS virtual appliance is also available for on-premises installation for super-fast access. Please contact us for details about that option.
+</aside>
 
 ## IP Addresses sources
 
@@ -772,7 +1109,7 @@ We aggregate data from several data streams:
 
 On the other hand, we have also information about White Lists presence of IP address, for example DNSWL.
 
-Unlike other lists, MQS analyzes the data about each IP address and provides normalized, de-duplicated, and pre-processed information about each IP address, containing internally calculated score (reputation), last modified timestamp, list of BL / WL where the item appears, etc.
+Unlike other lists, ZQS analyzes the data about each IP address and provides normalized, de-duplicated, and pre-processed information about each IP address, containing internally calculated score (reputation), last modified timestamp, list of BL / WL where the item appears, etc.
 
 ## Domains sources
 
@@ -784,3 +1121,4 @@ At this stage we aggregate data from two main Domain providers:
 More providers will be added in the near future. Stay tuned!
 
 
+	
