@@ -45,7 +45,7 @@ To ease implementation Zetascan provides developer libraries in various language
 
 # Authentication
 
-Authentication to ZQS can be provided via an API key, or specifying your servers static IP address.
+Authentication to ZQS can be provided via an API key, or specifying your servers' static IP address.
 
 ### API key
 
@@ -67,7 +67,7 @@ $response = curl_exec($ch);
 
 > Make sure to replace `YOURAPIKEY` with your API key.
 
-To query the ZQS an API can be specified as an argument. No API key? [Signup and receive](https://zetascan.com/signup/?lang=en) a key instantly. 
+To query the ZQS an API key can be specified as an argument. No API key? [Signup and receive](https://zetascan.com/signup/?lang=en) a key instantly. 
 
 ZQS uses API keys to allow access to the service, and expects the API key to be included in all requests, if IP authentication is not provided.
 
@@ -118,7 +118,7 @@ The type of desired query is passed in the HTTP request.
 
 ZQS provides two scoring mechanisms to grade an IP or domain-name for abuse, anti-spam measures, and trustworthiness. 
 
-The minimum score is `-0.1`, meaning an item was matched on a known trusted white-list.
+A negative score, like `-0.1`, means that an item was matched on a known trusted white-list.
 
 If a score is `0`, the item is not found within Zetascan and can be considered neutral.
 
@@ -143,8 +143,8 @@ We provide four IPv4 and four IPv6 addresses, which will always return the same 
 * `127.9.9.1` - returning as if found in SBL, XBL & CBL
 * `127.9.9.2` - returning as if in PBL
 * `127.9.9.3` - returning as if in SBL subnet
-* `127.9.9.4` - not found (good IP), also contains White List data
-* `::1, ::2, ::3, ::4` - returning as above for IPv6.
+* `127.9.9.4` - good IP, found in DNSWL, also contains White List data
+* `::1, ::2, ::3, ::4` - returning as above for IPv6, except for ::2, which is found both in PBL and DNSWL (example of a false positive)
 
 ### Domains
 
@@ -152,7 +152,7 @@ We provide two testing domains:
 
 * `baddomain.org` - returns as if found in all domain DB's: DBL, and all URIBL
 
-* `okdomain.org` - returns as if not found in any DB.
+* `okdomain.org` - returns as if found in a White List.
 
 ## Error handling
 
@@ -160,19 +160,25 @@ When querying ZQS, the following error-codes will be returned if the query or au
 
 ### Error codes
 
-`1` 	Wrong API key
+`1` - HTTP 404 - Invalid request - the REST path was wrong, e.g. /v2/check/gson/domain.com. Appears in the message body and in the
+x-zetascan-error header. This is the only error that appears like that,
+others appears in the specified format as per the documentation.
 
-`2` 	API key sent over HTTP (HTTPS required)
+`2` - HTTP 404 - Missing IP/Domain argument
 
-`3`		REST query with POST Method (GET Required)
+`3` - HTTP 404 - Failed to parse query's item
 
-`4`		Missing IP/Domain argument
+`4` - HTTP 403 - HTTPS required to supply API key
 
-`5`		Query limit exceeded (for developers)
+`5` - HTTP 403 - Not authorized (request to invalid host, route, port or method, or API method not supported)
 
-`6`		Failed to parse query item(s)
+`6` - HTTP 403 - Not authorized (request from invalid IP address or with invalid key)
 
-`7`		Authentication failure (wrong key, disabled, IP address not allowed, etc.)
+`7` - HTTP 403 - Wrong API Key supplied
+
+`8` - HTTP 404 - HTTP GET request required for queries
+
+`9` - HTTP 403 - Query limit exceeded
 
 
 # HTTP Format
@@ -389,7 +395,7 @@ Items are separated by space. The format for each item is:
 
 Where:
 
-* the first bool is true, if found in any black list.
+* the first bool is true, if found in any black or white list.
 
 * the second bool is true, if found in any white list.
 
@@ -636,7 +642,8 @@ Responses include additional information about an IP address with fraudulent act
         "port": "80",
         "sourceport": "23915",
         "destination": "1"
-      }
+      },
+	  "emailslastday":"123"
     }
 ```
 
@@ -655,7 +662,7 @@ state | Display the state (if available);
 time | The last registered activity timestamp in unix epoch format;
 emailsdaily | Contains the number of detected spam emails in the last 24 hours;
 
-For SMTP use, the `reason` JSON response will extend information based on the EHLO/SMTP reputation of the queried IP. Results include:
+In addition, the `reason` object contains additional detection information about the queried IP. Results include:
 
 * Bot
 * Sinkhole
@@ -875,6 +882,42 @@ Error handling for the JSONx query type is the same as the [JSON error handling]
 
 JSONx support multiple items for a single query, and matches the [JSON multiple-item](#multiple-items-3) format.
 
+# FQDN Queries
+
+```shell
+test.baddomain.org;baddomain.org:true,false,,1,0.6,dbl,red,gold,grey,black
+```
+
+```json
+{"results":[{"item":"test.baddomain.org","found":true,"score":1,"webscore":0.6,"fromSubnet":false,"sources":["shDBL","ubGrey","ubGold","ubRed","ubBlack"],
+"wl":false,"wldata":"","lastModified":1500970900,"fromParent":"baddomain.org"}],"executionTime":1,"status":"success"}
+```
+
+```shell
+x-zetascan-fromParent: baddomain.org
+x-zetascan-items: test.baddomain.org
+```
+
+We now support sub-domains (FQDN queries). Some BL’s and White Lists have sub-domains listed. If the item is not a direct hit, we will check the parent domain. For example:
+
+https://api.zetascan.com/v2/check/{json/jsonx/http/text}/test.baddomain.org
+
+# DNSWL data format
+
+The White List data can have two formats:
+
+"wldata":"1004" or "wldata":"med;domain.com;id". 1004 is a special case of so-called auto-promoted IP addresses. Their reputation is based on automatic detection.
+
+The second format has 3 parts: ranking, domain and ID.
+
+* Ranking can be low, med or high;
+
+* Domain is the registered DNS name of the IP address owner;
+
+* ID can be used to find out more information about the organization at https://www.dnswl.org/s/?s=ID
+
+"wldata" field will have empty string or may be missing, if "wl" is false.
+
 # Browser access
 
 Alternatively, you can test the ZQS using your web-browser. This should be used for test purposes only.
@@ -886,6 +929,11 @@ Alternatively, you can test the ZQS using your web-browser. This should be used 
 The service will return list of results with details on where the items were found, query time, and calculated score
 
 Note: a 5 second delay is applied to all anonymous user queries. Please register for an API key to remove this delay.
+
+Alternatively, you can issue a query to our API directly from the browser address bar,
+by entring the query REST URL:
+
+https://api.zetascan.com/v2/check/text/baddomain.org?key=YOURAPIKEY
 
 # DNS API
 
@@ -972,7 +1020,7 @@ The response will be the same format as the [HTTP text](#text-format):
 
 The format for each item is:
 
-`item:bool,bool,wldata,score,webscore,source`
+`item:bool,bool,wldata,score,webscore,sources`
 
 Where:
 
@@ -980,7 +1028,7 @@ Where:
 
 * the second bool is true, if found in any white list.
 
-* wldata contains the data from the white list (if present)
+* wldata contains the [data](#DNSWL-data-format) from the white list (if present)
 
 * score, returns the score used for MTA/anti-spam abuse.
 
@@ -1005,24 +1053,21 @@ The IP returned in the 127.X.X.X format is based on the realtime blacklist `RBL`
 
 Examples for each response type listed below:
 
-### 127.0.0.x
+### 127.0.0.x - Spamhaus IP lists
 
 Parameter | Description
 --------- | -----------
-127.0.0.x | PBL (Public/residential) IP adddresses from Spamhaus
-127.0.0.10 | reported by ISP
-127.0.0.11 | detected by Spamhaus
-127.0.0.x | IP lists from Spamhaus
+127.0.0.10 | PBL (Public/residential) IP adddresses, reported by ISP
+127.0.0.11 | PBL detected by Spamhaus
 127.0.0.4 | XBL Illegal 3rd party exploits, including proxies, worms and trojan exploits
 127.0.0.2 | SBL Spamhaus SBL Data
 127.0.0.3 | SBL Spamhaus SBL CSS Data
 127.0.0.9 | SBL Spamhaus DROP/EDROP Data
 
-### 127.0.1.x
+### 127.0.1.x - Spamhaus Domain Lists
 
 Parameter | Description
 --------- | -----------
-127.0.1.x | Domain lists from Spamhaus
 127.0.1.2 | spam domain
 127.0.1.4 | phish domain
 127.0.1.5 | malware domain
@@ -1032,23 +1077,22 @@ Parameter | Description
 127.0.1.104 | abused legit phish
 127.0.1.105 | abused legit malware
 127.0.1.106 | abused legit botnet C&C
-127.0.1.200 | Zero reputation domain
+127.0.1.200 | Zero reputation domains
 
-### 127.1.0.x
+### 127.1.0.x - URIBL Domain lists
 
 Parameter | Description
 --------- | -----------
-127.1.0.x | Domain lists from URIBL
 127.1.0.1 | Black
 127.1.0.2 | Gold
 127.1.0.3 | Grey
 127.1.0.4 | Red
+127.1.0.5 | White - a Domain White List from URIBL
 
 ### 127.8.0.x
 
 Parameter | Description
 --------- | -----------
-127.8.0.x | IP White lists from DNSWL
 127.8.x.1 | None, auto-discovered
 127.8.x.2 | Low ranking
 127.8.x.3 | Medium ranking
@@ -1074,18 +1118,18 @@ Parameter | Description
 15 | Email Marketing Providers
 20 | Added through Self Service without specific category
 
-# Technical Overview
-
-## Data & Access Methods
-
-The ZQS service is accessible via 6 different methods: Browser queries, 4 REST services (Text, HTTP, JSON, JSONx) and DNS.
+# Data Sources
 
 Currently we derive our results from several providers, including:
 
 * Spamhaus
-* Spamhaus real time stream
-* URIBL
-* DNSWL.
+* Spamhaus real time stream - DBL, SBL and ZRD 
+* URIBL - different levels of Domain Black Lists and a Domain White List
+* DNSWL - IP adddresses White List
+
+<aside class="notice">
+URIBL data can be also used for spam detection, based on URL's (links) inside message body.
+</aside>
 
 We also apply internal algorithms for de-duplicating, normalizing and scoring each item in our database, providing a seamless and reliable API end-point for your application.
 
@@ -1106,6 +1150,7 @@ We aggregate data from several data streams:
 * XBL
 * CBL
 * Spamhaus Real-time stream.
+* DNSWL IP addresses White List
 
 On the other hand, we have also information about White Lists presence of IP address, for example DNSWL.
 
@@ -1120,5 +1165,47 @@ At this stage we aggregate data from two main Domain providers:
 
 More providers will be added in the near future. Stay tuned!
 
+# Code snippets
 
-	
+## Python
+
+```python
+from requests import Session
+session = Session()
+session.head('https://api.zetascan.com/v1/check/json/127.9.9.1?key=yourkeygoeshere')
+response = session.get(
+  url='https://api.zetascan.com/v1/check/json/127.9.9.1?key=yourkeygoeshere'
+)
+print(response.text)
+```
+## Node.js
+
+```javascript
+var request = require('request');
+var options = {
+  url: 'https://api.zetascan.com/v1/check/json/127.9.9.1?key=yourkeygoeshere',
+  json: true
+};
+
+request(options, function(error, response, body) {
+  console.log(body);
+});
+```
+
+## Javascript
+
+```javascript
+jQuery(document).ready(function($) {
+  $.ajax({
+    type: 'GET',
+    url: 'https://api.zetascan.com/v1/check/json/127.9.9.1?key=yourkeygoeshere',
+    dataType: 'JSON',
+    success: function(response) {
+      console.log(response);
+    },
+    error: function(xhr, status, error) {
+      console.log(error.toString());
+    }
+  });
+});
+```
