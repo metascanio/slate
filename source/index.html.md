@@ -146,7 +146,8 @@ See the [Scoring Factors](#scoring-factors) section for exact values and logic u
 
 ### webscore
 
-Webscore is returned by all query methods. It is used to determine a score for integrating your web-application, mobile-app or protecting your application infrastructure.
+Webscore is returned by all query methods, except DNS queries. 
+It is used to determine a score for integrating your web-application, mobile-app or protecting your application infrastructure.
 
 ### score
 
@@ -161,7 +162,7 @@ We provide four IPv4 and four IPv6 addresses, which will always return the same 
 * `127.9.9.1` - returning as if found in SBL, XBL & CBL
 * `127.9.9.2` - returning as if in PBL
 * `127.9.9.3` - returning as if in SBL subnet
-* `127.9.9.4` - good IP, found in DNSWL, also contains White List data
+* `127.9.9.4` - good IP, found in Return Path White List and DNSWL, also contains DNSWL White List data
 * `::1, ::2, ::3, ::4` - returning as above for IPv6, except for ::2, which is found both in PBL and DNSWL (example of a false positive)
 
 ### Domains
