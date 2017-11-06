@@ -1325,15 +1325,19 @@ IP WL | -0.1 | -0.1
 Domains WL | -0.1 | -0.1
 
 
-## Multiples matches
+## Multiple matches
 
-If an item is found in more than one source, a score of 0.05 is added to the total calculated as per the tables above.
-For example, an item found in Spamhaus' SBL and PBL, and Seclytics' Suspicious category, will have score of 0.8 (0.4 + 0.1 + 0.2 + (2x0.05))
-This is also true for White Lists, so an item found in two White Lists will have a score of -0.25.
+If an item is found in more than one source, a score of 0.05 is added to the total calculated as per the tables above. 
+For example, an item found in Spamhaus' SBL and PBL, and Seclytics' Suspicious category, will have score of 0.8 (0.4 + 0.1 + 0.2 + (2x0.05)) 
+This is also true for White Lists, so an item found in two White Lists will have a score of -0.25. 
 
 <aside class="notice">
 Score and Web Score will never exceed 1. Basically any item with score above 0.3 is very suspicious. Items with scores above 0.5-0.6 shall be always blocked!
 </aside>
+
+## Propagation
+
+In the upcoming release we will provide a Propagation score, measuring the speed of detection of new threats, based on internal information we have and rate of updates and queries for a given item.
 
 
 # Code snippets
@@ -1343,9 +1347,9 @@ Score and Web Score will never exceed 1. Basically any item with score above 0.3
 ```python
 from requests import Session
 session = Session()
-session.head('https://dev2.zetascan.com/v1/check/json/127.9.9.1?key=yourkeygoeshere')
+session.head('https://api.zetascan.com/v2/check/json/127.9.9.1?key=yourkeygoeshere')
 response = session.get(
-  url='https://dev2.zetascan.com/v1/check/json/127.9.9.1?key=yourkeygoeshere'
+  url='https://api.zetascan.com/v2/check/json/127.9.9.1?key=yourkeygoeshere'
 )
 print(response.text)
 ```
@@ -1354,7 +1358,7 @@ print(response.text)
 ```javascript
 var request = require('request');
 var options = {
-  url: 'https://dev2.zetascan.com/v1/check/json/127.9.9.1?key=yourkeygoeshere',
+  url: 'https://api.zetascan.com/v2/check/json/127.9.9.1?key=yourkeygoeshere',
   json: true
 };
 
@@ -1369,7 +1373,7 @@ request(options, function(error, response, body) {
 jQuery(document).ready(function($) {
   $.ajax({
     type: 'GET',
-    url: 'https://dev2.zetascan.com/v1/check/json/127.9.9.1?key=yourkeygoeshere',
+    url: 'https://api.zetascan.com/v2/check/json/127.9.9.1?key=yourkeygoeshere',
     dataType: 'JSON',
     success: function(response) {
       console.log(response);
