@@ -209,6 +209,7 @@ Currently we derive our results from several providers, including:
 * DNSWL - IP addresses White List
 * Return Path - IP addresses and Domains White Lists (black list coming soon)
 * Seclytics - Threat lists for IP addresses with categorization
+* Vade Secure - Domains black list
 
 <aside class="notice">
 URIBL data can be also used for spam detection, based on URLs (links) inside message body.
