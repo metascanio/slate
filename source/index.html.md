@@ -146,7 +146,7 @@ See the [Scoring Factors](#scoring-factors) section for exact values and logic u
 
 ### webscore
 
-Webscore is returned by all query methods, except DNS queries. 
+Webscore is returned by all query methods, except DNS A and AAAA queries. 
 It is used to determine a score for integrating your web-application, mobile-app or protecting your application infrastructure.
 
 ### score
@@ -248,7 +248,8 @@ At this stage we aggregate data from two main Domain providers:
 
 * Spamhaus DBL Black List
 * Real-time Spamhaus ZRD (Zero Reputation Domains) list
-* URIBL Black List
+* URIBL Black Lists
+* Vade Secure Black List
 * URIBL White List
 * Return Path White List
 
